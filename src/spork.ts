@@ -6,7 +6,7 @@ export type Slop = { id: string; members: string[]; coordinator: string };
 export type Destination = { kind: "agent" | "slop"; id: string };
 export type Classification = { destination: Destination; message: string; reason: string };
 
-export type NecronEvent =
+export type SporkEvent =
   | { type: "route"; runId: string; destination: Destination; reason: string }
   | { type: "progress"; runId: string; agentId: string; message: string }
   | { type: "question"; runId: string; questionId: string; prompt: string }
@@ -14,7 +14,7 @@ export type NecronEvent =
   | { type: "summary"; runId: string; destination: Destination; text: string }
   | { type: "failure"; runId: string; message: string };
 
-export type EventSink = (event: NecronEvent) => void | Promise<void>;
+export type EventSink = (event: SporkEvent) => void | Promise<void>;
 export interface Classifier {
   classify(input: string, agents: Agent[], slops: Slop[]): Promise<Classification>;
 }
@@ -23,7 +23,7 @@ export interface Model {
 }
 
 export const DEFAULT_AGENTS: Agent[] = [
-  { id: "chief", instructions: "You are Necron's chief of staff. Give direct, useful answers. State uncertainty. Coordinate when asked." },
+  { id: "chief", instructions: "You are Spork's chief of staff. Give direct, useful answers. State uncertainty. Coordinate when asked." },
   { id: "researcher", instructions: "You are a research specialist. Analyze the question carefully. State uncertainty and avoid inventing sources." },
   { id: "builder", instructions: "You are an implementation specialist. Prefer concrete designs, code, and testable steps." },
 ];
@@ -79,7 +79,7 @@ export class OpenAICompatibleModel implements Model {
   }
 }
 
-export class Necron {
+export class Spork {
   readonly agents: Agent[];
   readonly slops: Slop[];
   readonly classifier: Classifier;

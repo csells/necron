@@ -17,15 +17,15 @@ export default function plugin(bb: BbPluginApi) {
   });
 
   bb.providers.register({
-    id: "necron",
-    displayName: "Necron",
+    id: "spork",
+    displayName: "Spork",
     icon: "Users",
     strings: {
-      signInHint: "Configure an OpenAI-compatible model endpoint in Necron settings.",
+      signInHint: "Configure an OpenAI-compatible model endpoint in Spork settings.",
       expiredHint: "Check the configured model endpoint and API key.",
-      installUrl: "https://github.com/csells/necron",
-      brandPrefix: "Necron ",
-      planModeCopy: "Necron will discuss the plan.",
+      installUrl: "https://github.com/csells/spork",
+      brandPrefix: "Spork ",
+      planModeCopy: "Spork will discuss the plan.",
     },
     maintenance: { health: true, usage: false, installation: false },
     capabilities: {
@@ -44,13 +44,13 @@ export default function plugin(bb: BbPluginApi) {
       fallback: [{
         id: "default",
         displayName: "Configured model",
-        description: "Uses the model in Necron settings.",
+        description: "Uses the model in Spork settings.",
         supportedReasoningEfforts: [{ reasoningEffort: "medium", description: "Default" }],
         defaultReasoningEffort: "medium",
         isDefault: true,
       }],
     },
-    env: { passthrough: ["NECRON_API_KEY", "NECRON_BASE_URL", "NECRON_MODEL"] },
+    env: { passthrough: ["SPORK_API_KEY", "SPORK_BASE_URL", "SPORK_MODEL"] },
     deriveProviderOptions(context) {
       return {
         baseUrl: String(context.settings.baseUrl ?? "http://127.0.0.1:11434/v1"),

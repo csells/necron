@@ -1,4 +1,4 @@
-# Necron 1
+# Spork
 
 An open-source, provider-neutral agent harness for one agent or a **slop** of agents. The BB plugin in this repo makes the first implementation available as a chat provider.
 
@@ -10,7 +10,7 @@ An open-source, provider-neutral agent harness for one agent or a **slop** of ag
 - An OpenAI-compatible Chat Completions adapter. It defaults to a local Ollama endpoint and model; an API base URL, model, and optional key can point it elsewhere.
 - A BB provider bridge with thread lifecycle, model listing, health, conversation history, and turn events.
 
-This is a conversational minimum. It has no tools, dynamic agent discovery, autonomous code changes, or evaluation-driven self-improvement yet. Those need explicit capabilities and measurable gates before Necron should modify itself.
+This is a conversational minimum. It has no tools, dynamic agent discovery, autonomous code changes, or evaluation-driven self-improvement yet. Those need explicit capabilities and measurable gates before Spork should modify itself.
 
 ## Talk to it in BB
 
@@ -18,16 +18,16 @@ Install [BB](https://getbb.app/) 0.43 or newer, start [Ollama](https://ollama.co
 
 ```sh
 ollama pull qwen3:4b-instruct-2507-q4_K_M
-bb plugin install https://github.com/csells/necron --yes
+bb plugin install https://github.com/csells/spork --yes
 ```
 
-Choose **Necron** as the provider for a BB thread. Ask normally to reach `chief`. Start a prompt with `@researcher` or `@builder` to reach that agent, or `@crew` to consult the slop. Example:
+Choose **Spork** as the provider for a BB thread. Ask normally to reach `chief`. Start a prompt with `@researcher` or `@builder` to reach that agent, or `@crew` to consult the slop. Example:
 
 ```text
 @crew How should we structure a resumable ingestion pipeline?
 ```
 
-The default endpoint is `http://127.0.0.1:11434/v1`. Change the plugin's **Model API base URL** and **Model** settings to use another OpenAI-compatible endpoint. Set `NECRON_API_KEY` in BB's host environment if that endpoint requires a bearer token. The endpoint and model are configuration; the harness has no dependency on Ollama itself.
+The default endpoint is `http://127.0.0.1:11434/v1`. Change the plugin's **Model API base URL** and **Model** settings to use another OpenAI-compatible endpoint. Set `SPORK_API_KEY` in BB's host environment if that endpoint requires a bearer token. The endpoint and model are configuration; the harness has no dependency on Ollama itself.
 
 ## Develop
 
@@ -38,7 +38,7 @@ npm run build
 bb plugin install . --yes
 ```
 
-The standalone runtime API is in [`src/necron.ts`](src/necron.ts). The BB provider adapter is in [`src/provider-bridge.ts`](src/provider-bridge.ts). `npm run check` runs type checking, core tests, and BB's provider protocol conformance suite.
+The standalone runtime API is in [`src/spork.ts`](src/spork.ts). The BB provider adapter is in [`src/provider-bridge.ts`](src/provider-bridge.ts). `npm run check` runs type checking, core tests, and BB's provider protocol conformance suite.
 
 ## Next slices
 

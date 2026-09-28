@@ -24,7 +24,7 @@ import {
   type PromptInput,
   type ThreadDelta,
 } from "@get-bb/plugin-sdk/provider-bridge";
-import { Necron, OpenAICompatibleModel, type Message } from "./necron.js";
+import { Spork, OpenAICompatibleModel, type Message } from "./spork.js";
 
 type Session = {
   threadId: string;
@@ -36,7 +36,7 @@ type Session = {
 const sessions = new Map<string, Session>();
 let dataDir: string | undefined;
 function historyPath(providerThreadId: string): string | undefined {
-  return dataDir && /^necron_[a-f0-9-]+$/.test(providerThreadId)
+  return dataDir && /^spork_[a-f0-9-]+$/.test(providerThreadId)
     ? join(dataDir, `${providerThreadId}.json`) : undefined;
 }
 function loadHistory(providerThreadId: string): Message[] {
@@ -102,11 +102,11 @@ function runTurn(session: Session, input: readonly PromptInput[], providerOption
   ]);
   const options = optionsSchema.safeParse(providerOptions);
   const config = options.success ? options.data : optionsSchema.parse({
-    baseUrl: process.env.NECRON_BASE_URL,
-    model: process.env.NECRON_MODEL,
+    baseUrl: process.env.SPORK_BASE_URL,
+    model: process.env.SPORK_MODEL,
   });
-  const harness = new Necron({
-    model: new OpenAICompatibleModel({ ...config, apiKey: process.env.NECRON_API_KEY }),
+  const harness = new Spork({
+    model: new OpenAICompatibleModel({ ...config, apiKey: process.env.SPORK_API_KEY }),
   });
   void harness.run(prompt, session.history, (event) => {
     if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
@@ -122,7 +122,7 @@ function runTurn(session: Session, input: readonly PromptInput[], providerOption
     deltas(session.threadId, [{ kind: "turn.boundary", status: "completed" }]);
   }).catch((error: unknown) => {
     if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
-    const message = `Necron failed: ${error instanceof Error ? error.message : String(error)}`;
+    const message = `Spork failed: ${error instanceof Error ? error.message : String(error)}`;
     emitMessage(message);
     deltas(session.threadId, [{ kind: "turn.boundary", status: "failed" }]);
   }).finally(() => {
@@ -167,7 +167,7 @@ const handlers: Record<string, Handler> = {
   [BRIDGE_REQUEST_METHODS.threadStart]: (id, params) => {
     const value = parsed(id, BRIDGE_REQUEST_METHODS.threadStart, threadStartParamsSchema, params);
     if (!value) return;
-    const providerThreadId = `necron_${randomUUID()}`;
+    const providerThreadId = `spork_${randomUUID()}`;
     const session = openSession(value.threadId, providerThreadId);
     io.sendResult(id, { providerThreadId, sessionRestorable: true });
     if (value.input?.length) runTurn(session, value.input, value.options.providerOptions);
@@ -182,7 +182,7 @@ const handlers: Record<string, Handler> = {
     const value = parsed(id, BRIDGE_REQUEST_METHODS.turnStart, turnStartParamsSchema, params);
     if (!value) return;
     const session = sessions.get(value.threadId);
-    if (!session) { io.sendError(id, BRIDGE_JSON_RPC_ERRORS.INVALID_PARAMS, "No Necron session; start or resume the thread first"); return; }
+    if (!session) { io.sendError(id, BRIDGE_JSON_RPC_ERRORS.INVALID_PARAMS, "No Spork session; start or resume the thread first"); return; }
     if (session.abort) { io.sendError(id, BRIDGE_JSON_RPC_ERRORS.INVALID_PARAMS, "A turn is already running"); return; }
     io.sendResult(id, {});
     runTurn(session, value.input, value.options.providerOptions, value.clientRequestId);

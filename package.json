@@ -1,5 +1,5 @@
 {
-  "name": "bb-plugin-necron",
+  "name": "bb-plugin-spork",
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "bbPluginSdk": ">=0.5.9"
   },
   "bb": {
-    "name": "Necron",
+    "name": "Spork",
     "description": "An event-driven agent harness and BB provider.",
     "branding": {
       "icon": "Users"
@@ -18,7 +18,7 @@
     "host": "./host.ts"
   },
   "scripts": {
-    "check": "tsc --noEmit && tsx --test test/necron.test.ts && vitest run test/bridge.spec.ts",
+    "check": "tsc --noEmit && tsx --test test/spork.test.ts && vitest run test/bridge.spec.ts",
     "build": "bb plugin build"
   },
   "dependencies": {

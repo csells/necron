@@ -9,20 +9,20 @@ const { handleLine } = await import("../src/provider-bridge.js");
 
 const server = createServer((_request, response) => {
   response.setHeader("content-type", "application/json");
-  response.end(JSON.stringify({ choices: [{ message: { content: "Hello from Necron" } }] }));
+  response.end(JSON.stringify({ choices: [{ message: { content: "Hello from Spork" } }] }));
 });
 
 beforeAll(async () => {
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
   if (!address || typeof address === "string") throw new Error("No test server port");
-  process.env.NECRON_BASE_URL = `http://127.0.0.1:${address.port}/v1`;
-  process.env.NECRON_MODEL = "test-model";
+  process.env.SPORK_BASE_URL = `http://127.0.0.1:${address.port}/v1`;
+  process.env.SPORK_MODEL = "test-model";
 });
 afterAll(async () => {
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
-  delete process.env.NECRON_BASE_URL;
-  delete process.env.NECRON_MODEL;
+  delete process.env.SPORK_BASE_URL;
+  delete process.env.SPORK_MODEL;
 });
 
 test("BB provider bridge passes the canonical protocol suite", async () => {
@@ -30,7 +30,7 @@ test("BB provider bridge passes the canonical protocol suite", async () => {
   try {
     const report = await experimental_runBridgeConformance({
       transport: { send: handleLine, takeMessages: output.takeMessages },
-      providerId: "necron",
+      providerId: "spork",
       session: {
         cwd: process.cwd(),
         promptInput: [{ type: "text", text: "say hello", mentions: [] }],
