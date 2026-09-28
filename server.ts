@@ -19,7 +19,7 @@ export default function plugin(bb: BbPluginApi) {
   bb.providers.register({
     id: "spork",
     displayName: "Spork",
-    icon: "Users",
+    icon: "./icons/spork.svg",
     strings: {
       signInHint: "Configure an OpenAI-compatible model endpoint in Spork settings.",
       expiredHint: "Check the configured model endpoint and API key.",

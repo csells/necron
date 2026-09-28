@@ -1,7 +1,7 @@
 {
   "name": "bb-plugin-spork",
   "description": "spork: the self-improving, self-organizing agent harness",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -13,7 +13,7 @@
     "name": "Spork",
     "description": "spork: the self-improving, self-organizing agent harness",
     "branding": {
-      "icon": "Users"
+      "icon": "./icons/spork.svg"
     },
     "server": "./server.ts",
     "host": "./host.ts"
