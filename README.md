@@ -6,13 +6,13 @@ An open-source, provider-neutral agent harness for one agent or a **slop** of ag
 
 ## What works today
 
-- A typed async event stream for routes, progress, summaries, failures, questions, and permission requests. The first four event types are emitted by the current runtime; human interaction events are reserved for the next slice.
+- A typed async event stream for routes, progress, addressed agent messages, summaries, failures, questions, and permission requests. Human interaction events are reserved for the next slice.
 - A classifier interface, with a deterministic mention classifier as the first implementation. Every input goes through it. A model classifier such as Laya can replace it without changing the runtime.
-- Three agents: `chief`, `researcher`, and `builder`. A `crew` slop asks the two specialists concurrently and has the chief synthesize one answer.
+- Three agents: `chief`, `researcher`, and `builder`. In the `crew` slop, the researcher sends work to the builder, the builder replies, the researcher reviews that reply, and both send their work to the chief for one answer. BB shows the message and progress events.
 - An OpenAI-compatible Chat Completions adapter. It defaults to a local Ollama endpoint and model; an API base URL, model, and optional key can point it elsewhere.
 - A BB provider bridge with thread lifecycle, model listing, health, conversation history, and turn events.
 
-This is a conversational minimum. It has no tools, dynamic agent discovery, autonomous code changes, or evaluation-driven self-improvement yet. Those need explicit capabilities and measurable gates before Spork should modify itself.
+This is a conversational minimum. The crew exchange is a fixed workflow within one run; agents cannot yet choose recipients, discover peers, form slops, or leave durable messages. Spork also has no tools, autonomous code changes, or evaluation-driven self-improvement yet.
 
 ## Talk to it in BB
 
@@ -46,7 +46,7 @@ The standalone runtime API is in [`src/spork.ts`](src/spork.ts). The BB provider
 
 1. Stream model deltas through the event bus and BB timeline.
 2. Add human question and permission round trips through BB's interaction protocol.
-3. Add agent identity, discovery, durable inboxes, and slop membership APIs.
+3. Add agent identity, discovery, durable inboxes, and slop membership APIs so agents can choose whom to contact and organize their own work.
 4. Add classifier adapters and routing evaluations, including Laya when it is the best fit.
 5. Add candidate generation, sandboxed trials, scored evaluations, and human approval for changes to the harness.
 

@@ -9,6 +9,7 @@ export type Classification = { destination: Destination; message: string; reason
 export type SporkEvent =
   | { type: "route"; runId: string; destination: Destination; reason: string }
   | { type: "progress"; runId: string; agentId: string; message: string }
+  | { type: "message"; runId: string; from: string; to: string; text: string }
   | { type: "question"; runId: string; questionId: string; prompt: string }
   | { type: "permission_request"; runId: string; requestId: string; action: string }
   | { type: "summary"; runId: string; destination: Destination; text: string }
@@ -93,7 +94,7 @@ export class Spork {
     const ids = new Set(this.agents.map((agent) => agent.id));
     if (!ids.has("chief")) throw new Error("A chief agent is required");
     for (const slop of this.slops) {
-      if (!ids.has(slop.coordinator) || slop.members.some((member) => !ids.has(member))) {
+      if (!slop.members.length || !ids.has(slop.coordinator) || slop.members.some((member) => !ids.has(member))) {
         throw new Error(`Slop ${slop.id} refers to an unknown agent`);
       }
     }
@@ -113,14 +114,37 @@ export class Spork {
       } else {
         const slop = this.slops.find((candidate) => candidate.id === route.destination.id);
         if (!slop) throw new Error(`Unknown slop: ${route.destination.id}`);
-        const reports = await Promise.all(slop.members.map(async (id) => {
+        const reports: { id: string; report: string }[] = [];
+        for (const id of slop.members) {
           const agent = this.agent(id);
           await emit({ type: "progress", runId, agentId: id, message: "working" });
-          const report = await this.model.complete(agent, messages, signal);
+          const previous = reports.at(-1);
+          if (previous) await emit({ type: "message", runId, from: previous.id, to: id, text: previous.report });
+          const prompt = previous
+            ? `${route.message}\n\nMessage from @${previous.id} to you:\n${previous.report}\n\nBuild on this work. Say where you agree or disagree.`
+            : route.message;
+          const report = await this.model.complete(agent, [
+            ...history,
+            { role: "user", content: prompt },
+          ], signal);
           await emit({ type: "progress", runId, agentId: id, message: "finished" });
-          return { id, report };
-        }));
-        const synthesis = `${route.message}\n\nTeam reports:\n${reports.map(({ id, report }) => `[${id}] ${report}`).join("\n\n")}\n\nSynthesize one answer, noting disagreements and uncertainty.`;
+          reports.push({ id, report });
+        }
+        if (reports.length > 1) {
+          const first = reports[0]!;
+          const last = reports.at(-1)!;
+          await emit({ type: "message", runId, from: last.id, to: first.id, text: last.report });
+          await emit({ type: "progress", runId, agentId: first.id, message: "reviewing teammate's work" });
+          const review = await this.model.complete(this.agent(first.id), [
+            ...history,
+            { role: "user", content: `${route.message}\n\nYour earlier report:\n${first.report}\n\nReply from @${last.id}:\n${last.report}\n\nReview the reply. Identify agreements, disagreements, and any correction the chief should make.` },
+          ], signal);
+          reports.push({ id: first.id, report: `Follow-up review: ${review}` });
+        }
+        for (const report of reports) {
+          await emit({ type: "message", runId, from: report.id, to: slop.coordinator, text: report.report });
+        }
+        const synthesis = `${route.message}\n\nMessages from the team:\n${reports.map(({ id, report }) => `[${id}] ${report}`).join("\n\n")}\n\nGive one coherent answer. Note material disagreements and uncertainty.`;
         await emit({ type: "progress", runId, agentId: slop.coordinator, message: "synthesizing" });
         text = await this.model.complete(this.agent(slop.coordinator), [
           ...history,

@@ -112,6 +112,8 @@ function runTurn(session: Session, input: readonly PromptInput[], providerOption
     if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
     if (event.type === "progress" && event.message !== "finished") {
       emitMessage(`${event.agentId}: ${event.message}`);
+    } else if (event.type === "message") {
+      emitMessage(`${event.from} → ${event.to}: ${event.text}`);
     }
   }, abort.signal).then((answer) => {
     if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
