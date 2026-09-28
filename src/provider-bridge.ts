@@ -85,13 +85,20 @@ function runTurn(session: Session, input: readonly PromptInput[], providerOption
     return;
   }
   const turn = ++session.turn;
-  const key = { providerItemId: `${session.providerThreadId}:${turn}:answer` };
+  let itemCount = 0;
+  const emitMessage = (text: string) => {
+    const key = { providerItemId: `${session.providerThreadId}:${turn}:${++itemCount}` };
+    deltas(session.threadId, [
+      { kind: "item.open", key, item: { type: "agentMessage", text: "" } },
+      { kind: "item.textDelta", key, channel: "agentMessage", text },
+      { kind: "item.textClose", key, channel: "agentMessage", text },
+    ]);
+  };
   const abort = new AbortController();
   session.abort = abort;
   deltas(session.threadId, [
     ...(clientRequestId === undefined ? [] : [{ kind: "input.accepted" as const, clientRequestId }]),
     { kind: "turn.open" },
-    { kind: "item.open", key, item: { type: "agentMessage", text: "" } },
   ]);
   const options = optionsSchema.safeParse(providerOptions);
   const config = options.success ? options.data : optionsSchema.parse({
@@ -101,24 +108,23 @@ function runTurn(session: Session, input: readonly PromptInput[], providerOption
   const harness = new Necron({
     model: new OpenAICompatibleModel({ ...config, apiKey: process.env.NECRON_API_KEY }),
   });
-  void harness.run(prompt, session.history, () => {}, abort.signal).then((answer) => {
+  void harness.run(prompt, session.history, (event) => {
+    if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
+    if (event.type === "progress" && event.message !== "finished") {
+      emitMessage(`${event.agentId}: ${event.message}`);
+    }
+  }, abort.signal).then((answer) => {
     if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
     session.history.push({ role: "user", content: prompt }, { role: "assistant", content: answer });
     const path = historyPath(session.providerThreadId);
     if (path) writeFileSync(path, JSON.stringify(session.history));
-    deltas(session.threadId, [
-      { kind: "item.textDelta", key, channel: "agentMessage", text: answer },
-      { kind: "item.textClose", key, channel: "agentMessage", text: answer },
-      { kind: "turn.boundary", status: "completed" },
-    ]);
+    emitMessage(answer);
+    deltas(session.threadId, [{ kind: "turn.boundary", status: "completed" }]);
   }).catch((error: unknown) => {
     if (sessions.get(session.threadId) !== session || abort.signal.aborted) return;
     const message = `Necron failed: ${error instanceof Error ? error.message : String(error)}`;
-    deltas(session.threadId, [
-      { kind: "item.textDelta", key, channel: "agentMessage", text: message },
-      { kind: "item.textClose", key, channel: "agentMessage", text: message },
-      { kind: "turn.boundary", status: "failed" },
-    ]);
+    emitMessage(message);
+    deltas(session.threadId, [{ kind: "turn.boundary", status: "failed" }]);
   }).finally(() => {
     if (session.abort === abort) session.abort = undefined;
   });
