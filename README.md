@@ -1,5 +1,7 @@
 # Spork
 
+**spork: the self-improving, self-organizing agent harness**
+
 An open-source, provider-neutral agent harness for one agent or a **slop** of agents. The BB plugin in this repo makes the first implementation available as a chat provider.
 
 ## What works today
