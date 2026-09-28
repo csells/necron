@@ -1,0 +1,34 @@
+{
+  "name": "bb-plugin-necron",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22",
+    "bb": ">=0.43",
+    "bbPluginSdk": ">=0.5.9"
+  },
+  "bb": {
+    "name": "Necron",
+    "description": "An event-driven agent harness and BB provider.",
+    "branding": {
+      "icon": "Users"
+    },
+    "server": "./server.ts",
+    "host": "./host.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit && tsx --test test/necron.test.ts && vitest run test/bridge.spec.ts",
+    "build": "bb plugin build"
+  },
+  "dependencies": {
+    "@get-bb/plugin-sdk": "0.5.9",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.0",
+    "vitest": "^5.0.2"
+  }
+}
